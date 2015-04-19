@@ -4,7 +4,7 @@ require_once "config.php";
 class Database {
     private static $object;
     private $db;
-    public $queries;
+    private $queries;
     
     // Metadata queries.
     // Not available to the rest of the database object.
