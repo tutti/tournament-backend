@@ -22,7 +22,9 @@ if (array_key_exists("upload", $_POST)) {
         die();
     }
     
-    $tournament = Tournament::create($_POST['date'], $text);
+    $staff = explode(",", $_POST['staff']);
+    
+    $tournament = Tournament::create($_POST['date'], $text, $staff);
     
     echo L("Tournament uploaded.");
     die();
@@ -54,6 +56,7 @@ if (array_key_exists("upload", $_POST)) {
             <label for="pass"><?= L("Password"); ?>: </label><input type="password" name="pass" /><br />
             <label for="file"><?= L("File"); ?>: </label><input type="file" name="file" /><br />
             <label for="date"><?= L("Date"); ?>: </label><input type="text" name="date" id="date" /><br />
+            <label for="staff"><?= L("Staff"); ?>: </label><input type="text" name="staff" /><br />
             <button name="upload" value="upload"><?= L("Upload"); ?></button>
         </form>
     </body>

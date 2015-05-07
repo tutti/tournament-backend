@@ -10,6 +10,7 @@ class Player {
     
     private $popid;
     private $name;
+    private $gender;
     private $visible;
     
     private static function __init() {
@@ -18,6 +19,8 @@ class Player {
         self::$db = Database::get();
         self::$db->prepare("create_player", "INSERT INTO player (popid, name, visible) VALUES (:popid, :name, true)");
         self::$db->prepare("get_player", "SELECT * FROM player WHERE popid=:popid");
+        self::$db->prepare("get_position_count", "SELECT count(*) AS count FROM tournament_participation WHERE player=:popid AND placement=:position");
+        self::$db->prepare("get_staff_positions", "SELECT count(*) AS count FROM tournament_staff WHERE player=:popid");
         
         self::$has_init = true;
     }
@@ -39,6 +42,7 @@ class Player {
         $player = new Player();
         $player->popid = $popid;
         $player->name = $name;
+        $player->gender = "M";
         $player->visible = true;
         self::$players[$popid] = $player;
         
@@ -62,6 +66,7 @@ class Player {
         $player = new Player();
         $player->popid = $popid;
         $player->name = $data['name'];
+        $player->gender = $data['gender'];
         $player->visible = $data['visible'];
         self::$players[$popid] = $player;
         
@@ -81,11 +86,39 @@ class Player {
         return self::create($popid, $name);
     }
     
-    public function get_popid() {
+    public function getPopid() {
         return $this->popid;
     }
     
-    public function get_name() {
+    public function setName($name) {
+        $this->name = $name;
+    }
+    
+    public function getName() {
         return $this->name;
+    }
+    
+    public function setGender($gender) {
+        if ($gender != "M" && $gender != "F" && $gender != "O") {
+            return;
+        }
+        $this->gender = $gender;
+    }
+    
+    public function getGender() {
+        return $this->gender;
+    }
+    
+    public function getPositionCount($position) {
+        self::$db->bind("get_position_count", ":popid", $this->popid);
+        self::$db->bind("get_position_count", ":position", $position);
+        $count = self::$db->getFirst("get_position_count");
+        return $count['count'];
+    }
+    
+    public function isStaff() {
+        self::$db->bind("get_staff_positions", ":popid", $this->popid);
+        $count = self::$db->getFirst("get_staff_positions");
+        return ($count['count'] > 0);
     }
 }

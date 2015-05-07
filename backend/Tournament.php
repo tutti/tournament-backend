@@ -12,6 +12,7 @@ class Tournament {
     private $players;
     private $rounds;
     private $results;
+    private $staff;
     
     private static function __init() {
         if (self::$has_init) return;
@@ -21,11 +22,12 @@ class Tournament {
         self::$db->prepare("create_round", "INSERT INTO round (tournament, roundnumber) VALUES (:tournamentid, :roundnumber)");
         self::$db->prepare("create_game", "INSERT INTO game (round, player1, player2, winner) VALUES (:roundid, :p1id, :p2id, :wid)");
         self::$db->prepare("create_participation", "INSERT INTO tournament_participation (tournament, player, placement, wins, losses, ties, owp, oowp) VALUES (:tournamentid, :playerid, :placement, :wins, :losses, :ties, :owp, :oowp)");
+        self::$db->prepare("create_staffing", "INSERT INTO tournament_staff (tournament, player) VALUES (:tournamentid, :playerid)");
         
         self::$has_init = true;
     }
     
-    public static function create($date, $json) {
+    public static function create($date, $json, $staff) {
         self::__init();
         // Create the tournament record
         self::$db->bind("save_tournament", ":date", $date);
@@ -34,6 +36,7 @@ class Tournament {
         $tournament_id = self::$db->lastID();
         self::$db->bind("create_round", ":tournamentid", $tournament_id);
         self::$db->bind("create_participation", ":tournamentid", $tournament_id);
+        self::$db->bind("create_staffing", ":tournamentid", $tournament_id);
         
         $tournament = new Tournament();
         $tournament->id = $tournament_id;
@@ -110,7 +113,14 @@ class Tournament {
             self::$db->execute("create_participation");
         }
         
-        print_r($tournament);
+        $tournament->staff = [];
+        // Save the staff data
+        foreach ($staff as $staffid) {
+            Player::create_or_load($staffid, ""); // Create a player for the staff member if none exists.
+            self::$db->bind("create_staffing", ":playerid", $staffid);
+            self::$db->execute("create_staffing");
+            $tournament->staff[] = Player::load($staffid);
+        }
     }
     
     public static function load($id) {

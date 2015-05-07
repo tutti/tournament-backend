@@ -26,6 +26,7 @@ INSERT INTO locale (`language`, english, translated) VALUES
     ("no", "Username", "Brukernavn"),
     ("no", "Password", "Passord"),
     ("no", "File", "Fil"),
+    ("no", "Staff", "Staff"),
     ("no", "Upload", "Last opp"),
     ("no", "Incorrect username or password.", "Feil brukernavn eller passord."),
     ("no", "Invalid file.", "Ugyldig fil."),

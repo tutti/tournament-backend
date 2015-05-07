@@ -1,7 +1,7 @@
 -- Drop all the tables if they already exist. If this file is running, this is
 -- meant to happen.
 DROP TABLE IF EXISTS metadata, game, round, tournament_participation,
-    tournament, player, locale;
+    tournament_staff, tournament, player, locale;
 
 -- Metadata table: A table to contain all persisted key-value data about the
 -- application. Multiple values can exist for one key.
@@ -20,6 +20,7 @@ INSERT INTO metadata (`key`, `value`, `unique`) VALUES ("dbversion", "0", TRUE);
 CREATE TABLE player (
     popid INT(11) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL DEFAULT "",
+    gender CHAR(1) NOT NULL DEFAULT "M",
     visible BOOLEAN NOT NULL DEFAULT TRUE
 );
 -- Insert the unknown and bye players. The unknown player is used in place of
@@ -48,6 +49,14 @@ CREATE TABLE tournament_participation (
     ties INT(11) NOT NULL,
     owp DECIMAL(5,2) NOT NULL,
     oowp DECIMAL(5,2) NOT NULL,
+    FOREIGN KEY (tournament) REFERENCES tournament(id),
+    FOREIGN KEY (player) REFERENCES player(popid)
+);
+
+CREATE TABLE tournament_staff (
+    id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    tournament INT(11) NOT NULL,
+    player INT(11) NOT NULL,
     FOREIGN KEY (tournament) REFERENCES tournament(id),
     FOREIGN KEY (player) REFERENCES player(popid)
 );
