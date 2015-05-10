@@ -1,0 +1,37 @@
+<div id="menu">
+    <ul>
+        <li><a href="/">Hovedside</a></li>
+        <li><a href="/find_player">Finn spiller</a></li>
+
+        {% if user.is_authenticated %}
+
+        <li class="submenu">
+            <a class="extend-menu" href="">Brukermeny</a>
+            <ul>
+                <li><a href="">Vis profil</a></li>
+                <li><a href="">Endre profil</a></li>
+                <li><a href="">Vis turneringer</a></li>
+                <li><a href="/logout">Logg ut</a></li>
+            </ul>
+        </li>
+
+        {% else %}
+
+        <li><a href="/login">Logg inn</a></li>
+
+        {% endif %}
+
+        {% if user.groups.all.0.name = 'Staff' %}
+
+        <li class="submenu">
+            <a class="extend-menu" href="">Admin-meny</a>
+            <ul>
+                {% if perms.backend.add_tournament %}
+                <li><a href="/upload">Last opp</a></li>
+                {% endif %}
+            </ul>
+        </li>
+
+        {% endif %}
+    </ul>
+</div>

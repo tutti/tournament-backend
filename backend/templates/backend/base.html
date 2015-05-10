@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Bergen Pokémonliga</title>
+        <link rel="stylesheet" href="/static/css/main.css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="/static/js/main.js"></script>
+        {% block head %}
+        {% endblock %}
+    </head>
+    <body>
+        {% include "backend/__header.html" %}
+        <div id="wrapper">
+            {% include "backend/__menu.html" %}
+            <div id="inner-body">
+                {% if errors %}
+                <ul class="errors">
+                {% for error in errors %}
+                {{ error }}
+                {% endfor %}
+                </ul>
+                {% endif %}
+                {% block body %}
+                <h1>Nothing here.</h1>
+                {% endblock %}
+            </div>
+            <div class="clearfloat"></div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,9 @@
+{% extends 'backend/base.html' %}
+
+{% block body %}
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="tournamentFile" />
+    <button value="submit">Last opp</button>
+    {% csrf_token %}
+</form>
+{% endblock %}

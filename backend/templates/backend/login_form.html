@@ -1,0 +1,12 @@
+{% extends "backend/base.html" %}
+
+{% block body %}
+<form action="/login" method="post">
+    <label for="username">Brukernavn:</label><br />
+    <input type="text" name="username" /><br />
+    <label for="password">Passord:</label><br />
+    <input type="password" name="password" /><br />
+    {% csrf_token %}
+    <button name="submit">Logg inn</button>
+</form>
+{% endblock %}
