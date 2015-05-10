@@ -13,7 +13,7 @@ class TournamentAdmin(admin.ModelAdmin):
 
 admin.site.register(Player)
 admin.site.register(Tournament, TournamentAdmin)
-admin.site.register(Participation)
+#admin.site.register(Participation)
 admin.site.register(Round)
 admin.site.register(Game)
 admin.site.register(Award)

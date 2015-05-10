@@ -1,0 +1,38 @@
+{% extends "backend/base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/view_player.css" />
+<script src="/static/js/view_player.js"></script>
+{% endblock %}
+
+{% block body %}
+<div id="trainercard">
+    <div id="avatar-container">
+        <img src="{{ avatar_url }}" />
+    </div>
+    <div id="player-info">
+        <span id="player-name">{{ name }}</span><br />
+        <span id="player-id">#{{ pop_id }}</span>
+    </div>
+    <div id="player-records">
+        1. plass: <span id="1st-count">{{ firsts }}</span><br />
+        2. plass: <span id="2nd-count">{{ seconds }}</span><br />
+        3. plass: <span id="3rd-count">{{ thirds }}</span><br />
+        Deltatt: <span id="participation-count">{{ participation_count }}</span>
+    </div>
+</div>
+<div class="clearfloat"></div>
+<div id="award-box">
+    <div id="tooltip" style="display: none;">
+        <span id="tooltip-head">Head</span><br />
+        <span id="tooltip-body">Body</span>
+    </div>
+    <h3>Premieboks:</h3>
+    {% for award in awards %}
+    <img class="award-image" src="{{ award.image.url }}" data-tooltip-head="{{ award.name }}" data-tooltip-body="{{ award.description }}" />
+    {% if forloop.counter|divisibleby:"8" %}
+    <br />
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

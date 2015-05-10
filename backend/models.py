@@ -16,6 +16,46 @@ class Player(models.Model):
     def __str__(self):
         return str(self.pop_id) + " " + self.name
 
+    def add_award(self, award_id):
+        self.awards.add(Award.objects.get(pk=award_id))
+
+    def count_outcomes(self, outcome):
+        participations = Participation.objects.filter(player=self)
+        count = 0
+        if (outcome == 0):
+            return len(participations)
+        for participation in participations:
+            if participation.placement == outcome:
+                count += 1
+        return count
+
+    def update_awards(self):
+        participates = self.count_outcomes(0)
+        firsts = self.count_outcomes(1)
+        seconds = self.count_outcomes(2) + firsts
+        thirds = self.count_outcomes(3) + seconds
+        print(str(participates) + " " + str(firsts) + " " + str(seconds) + " " + str(thirds))
+        if participates >= 1:
+            self.add_award(1)
+        if participates >= 5:
+            self.add_award(2)
+        if participates >= 10:
+            self.add_award(3)
+        if participates >= 50:
+            self.add_award(4)
+        if firsts >= 1:
+            self.add_award(5)
+        if firsts >= 10:
+            self.add_award(6)
+        if seconds >= 1:
+            self.add_award(7)
+        if seconds >= 10:
+            self.add_award(8)
+        if thirds >= 1:
+            self.add_award(9)
+        if thirds >= 10:
+            self.add_award(10)
+
 class Tournament(models.Model):
     name = models.CharField(max_length=255)
     players = models.ManyToManyField(Player, through='Participation', related_name='tournament_players', blank=True)
@@ -34,17 +74,12 @@ class Tournament(models.Model):
             'gender': 'M'
         }
 
-        # Create a tournament object
-        # tournament.xml = xml
-
         # Start at the root
         root = ElementTree.fromstring(xml)
 
         # Read basic data about the tournament
         data = root.find("data")
         tournament = Tournament.objects.create(xml=xml, name=data.find("name").text)
-        # tournament.name = data.find("name").text
-        # tournament.save()
 
         # Create player (and user) objects for players who do not have them yet
         playerElements = root.find("players").findall("player")
@@ -77,9 +112,6 @@ class Tournament(models.Model):
             # Create the round object
             roundnum = element.attrib['number']
             round = Round.objects.create(roundnum=roundnum, tournament=tournament)
-            # round.roundnum = roundnum
-            # round.tournament = tournament
-            # round.save()
 
             matchElements = element.find("matches").findall("match")
 
@@ -90,11 +122,6 @@ class Tournament(models.Model):
                 player1 = players[p1id]['player']
                 player2 = players[p2id]['player']
                 game = Game.objects.create(round=round, player1=player1, player2=player2, winner=melem.attrib['outcome'])
-                # game.round = round
-                # game.player1 = player1
-                # game.player2 = player2
-                # game.winner = melem.attrib['outcome']
-                # game.save()
 
                 # Update the wins and losses of both players
                 players[p1id]['opponents'].append(p2id)
@@ -104,11 +131,9 @@ class Tournament(models.Model):
                 if int(melem.attrib['outcome']) == 1:
                     players[p1id]['wins'] += 1
                     players[p2id]['losses'] += 1
-                    print("winner 1")
                 elif int(melem.attrib['outcome']) == 2:
                     players[p1id]['losses'] += 1
                     players[p2id]['wins'] += 1
-                    print("winner 2")
                 else:
                     players[p1id]['ties'] += 1
                     players[p2id]['ties'] += 1
@@ -168,6 +193,12 @@ class Tournament(models.Model):
                 oowp=pinfo['oowp']
             )
         tournament.save()
+
+        # Update all participants' awards
+        for i in range(len(sorted_players)):
+            sorted_players[i]['player'].update_awards()
+
+        # Return the tournament
         return tournament
 
 class Round(models.Model):
