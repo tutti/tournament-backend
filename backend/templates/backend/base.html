@@ -14,9 +14,16 @@
             {% include "backend/__menu.html" %}
             <div id="inner-body">
                 {% if errors %}
-                <ul class="errors">
+                <ul id="errors">
                 {% for error in errors %}
-                {{ error }}
+                {{ error }}<br />
+                {% endfor %}
+                </ul>
+                {% endif %}
+                {% if messages %}
+                <ul id="messages">
+                {% for message in messages %}
+                {{ message }}<br />
                 {% endfor %}
                 </ul>
                 {% endif %}

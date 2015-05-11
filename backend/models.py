@@ -16,8 +16,8 @@ class Player(models.Model):
     def __str__(self):
         return str(self.pop_id) + " " + self.name
 
-    def add_award(self, award_id):
-        self.awards.add(Award.objects.get(pk=award_id))
+    def add_award(self, award_name):
+        self.awards.add(Award.objects.get(name=award_name))
 
     def count_outcomes(self, outcome):
         participations = Participation.objects.filter(player=self)
@@ -34,27 +34,55 @@ class Player(models.Model):
         firsts = self.count_outcomes(1)
         seconds = self.count_outcomes(2) + firsts
         thirds = self.count_outcomes(3) + seconds
+        staff = len(self.tournament_staff.all())
         print(str(participates) + " " + str(firsts) + " " + str(seconds) + " " + str(thirds))
         if participates >= 1:
-            self.add_award(1)
+            self.add_award("Pokéball")
         if participates >= 5:
-            self.add_award(2)
+            self.add_award("Great Ball")
         if participates >= 10:
-            self.add_award(3)
+            self.add_award("Ultra Ball")
         if participates >= 50:
-            self.add_award(4)
+            self.add_award("Master Ball")
         if firsts >= 1:
-            self.add_award(5)
+            self.add_award("Nugget")
         if firsts >= 10:
-            self.add_award(6)
+            self.add_award("Big Nugget")
         if seconds >= 1:
-            self.add_award(7)
+            self.add_award("Pearl")
         if seconds >= 10:
-            self.add_award(8)
+            self.add_award("Big Pearl")
         if thirds >= 1:
-            self.add_award(9)
+            self.add_award("Stardust")
         if thirds >= 10:
-            self.add_award(10)
+            self.add_award("Star Piece")
+        if staff >= 1:
+            self.add_award("Premier Ball")
+
+    def get_eligible_avatars(self):
+        avatars = []
+        avatarObjects = Avatar.objects.all()
+        for obj in avatarObjects:
+            if self.is_eligible_avatar(obj):
+                avatars.append(obj)
+        return avatars
+
+    def is_eligible_avatar(self, avatar):
+        if avatar.name_male == "School Kid":
+            return True
+        firsts = self.count_outcomes(1)
+        staff = len(self.tournament_staff.all())
+        if avatar.name_male == "Rich Boy" and firsts >= 1:
+            return True
+        if avatar.name_male == "Blackbelt" and firsts >= 5:
+            return True
+        if avatar.name_male == "Psychic" and firsts >= 10:
+            return True
+        if avatar.name_male == "Ace Trainer" and firsts >= 25:
+            return True
+        if avatar.name_male == "Champion" and staff >= 1:
+            return True
+        return False
 
 class Tournament(models.Model):
     name = models.CharField(max_length=255)
@@ -80,6 +108,16 @@ class Tournament(models.Model):
         # Read basic data about the tournament
         data = root.find("data")
         tournament = Tournament.objects.create(xml=xml, name=data.find("name").text)
+
+        # Get the organiser's user object
+        organiser_id = data.find("organizer").attrib["popid"]
+        organiser_name = data.find("organizer").attrib["name"]
+        organiser, created = Player.objects.get_or_create(pop_id=organiser_id, defaults=player_defaults)
+        # There will be no default password, and the name will not be set.
+        # The intended case is for the organiser to already have an account.
+        # Add the staff award to the organiser, and the organiser to the staff.
+        organiser.add_award("Premier Ball")
+        tournament.staff.add(organiser)
 
         # Create player (and user) objects for players who do not have them yet
         playerElements = root.find("players").findall("player")
@@ -117,26 +155,38 @@ class Tournament(models.Model):
 
             for melem in matchElements:
                 # Create each game object
-                p1id = melem.find("player1").attrib['userid']
-                p2id = melem.find("player2").attrib['userid']
-                player1 = players[p1id]['player']
-                player2 = players[p2id]['player']
-                game = Game.objects.create(round=round, player1=player1, player2=player2, winner=melem.attrib['outcome'])
+                outcome = int(melem.attrib['outcome'])
+                if outcome == 5:
+                    # This was a bye match
+                    p1id = melem.find("player").attrib['userid']
+                    p2id = False
+                    player1 = players[p1id]['player']
+                    player2 = False
+                    game = Game.objects.create(round=round, player1=player1, player2=None, winner=1)
 
-                # Update the wins and losses of both players
-                players[p1id]['opponents'].append(p2id)
-                players[p2id]['opponents'].append(p1id)
-                players[p1id]['matches'] += 1
-                players[p2id]['matches'] += 1
-                if int(melem.attrib['outcome']) == 1:
+                    players[p1id]['matches'] += 1
                     players[p1id]['wins'] += 1
-                    players[p2id]['losses'] += 1
-                elif int(melem.attrib['outcome']) == 2:
-                    players[p1id]['losses'] += 1
-                    players[p2id]['wins'] += 1
                 else:
-                    players[p1id]['ties'] += 1
-                    players[p2id]['ties'] += 1
+                    p1id = melem.find("player1").attrib['userid']
+                    p2id = melem.find("player2").attrib['userid']
+                    player1 = players[p1id]['player']
+                    player2 = players[p2id]['player']
+                    game = Game.objects.create(round=round, player1=player1, player2=player2, winner=outcome)
+
+                    # Update the wins and losses of both players
+                    players[p1id]['opponents'].append(p2id)
+                    players[p2id]['opponents'].append(p1id)
+                    players[p1id]['matches'] += 1
+                    players[p2id]['matches'] += 1
+                    if outcome == 1:
+                        players[p1id]['wins'] += 1
+                        players[p2id]['losses'] += 1
+                    elif outcome == 2:
+                        players[p1id]['losses'] += 1
+                        players[p2id]['wins'] += 1
+                    else:
+                        players[p1id]['ties'] += 1
+                        players[p2id]['ties'] += 1
 
         # Figure out which players did not finish
         dnf = {}
@@ -173,7 +223,8 @@ class Tournament(models.Model):
                 opponent_opwins += players[oid]['owp']
             pinfo['oowp'] = opponent_opwins / len(pinfo['opponents']);
 
-            sorted_players.append(pinfo)
+            if pid not in dnf:
+                sorted_players.append(pinfo)
 
         # Sort the players list
         sorted_players.sort(key=lambda player: -player['oowp'])
@@ -198,6 +249,10 @@ class Tournament(models.Model):
         for i in range(len(sorted_players)):
             sorted_players[i]['player'].update_awards()
 
+        # Add the dropped award to players who didn't finish
+        for did in dnf:
+            players[did]['player'].add_award("Escape Rope")
+
         # Return the tournament
         return tournament
 
@@ -211,7 +266,7 @@ class Round(models.Model):
 class Game(models.Model):
     round = models.ForeignKey(Round)
     player1 = models.ForeignKey(Player, related_name='game_p1')
-    player2 = models.ForeignKey(Player, related_name='game_p2')
+    player2 = models.ForeignKey(Player, related_name='game_p2', null=True, blank=True)
     winner = models.SmallIntegerField() # 1 or 2 for player 1 or 2, 3 for tie
     
     def __str__(self):

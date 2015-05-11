@@ -1,0 +1,42 @@
+{% extends "backend/base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/choose_avatar.css" />
+<script src="/static/js/choose_avatar.js"></script>
+{% endblock %}
+
+{% block body %}
+<h2>Velg en avatar</h2>
+<div id="avatar-container">
+    {% for avatar in avatars %}
+    <div class="avatar-info{% if avatar == selected %} selected{% endif %}" data-avatar-id="{{ avatar.pk }}">
+        <div class="avatar-image">
+            {% if gender == 'M' %}
+            <img src="{{ avatar.image_male.url }}" /><br />
+            {% else %}
+            <img src="{{ avatar.image_female.url }}" /><br />
+            {% endif %}
+        </div>
+        <div class="avatar-details">
+            <span class="avatar-name">
+                {% if gender == 'M' %}
+                {{ avatar.name_male }}
+                {% else %}
+                {{ avatar.name_female }}
+                {% endif %}
+            </span><br />
+            <span class="avatar-requirements">
+                {{ avatar.description }}
+            </span>
+        </div>
+        <div class="checkmark"></div>
+        <div class="clearfloat"></div>
+    </div>
+    {% endfor %}
+    <form action="/choose_avatar" method="post">
+        <input type="hidden" id="avatar-input" name="avatar" value="{{ avatar.pk }}" />
+        <button id="submit" name="submit" value="submit">Lagre valg</button>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}

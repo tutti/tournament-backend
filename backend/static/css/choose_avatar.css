@@ -1,0 +1,52 @@
+#avatar-container {
+    width: 590px;
+}
+
+.avatar-info {
+    margin: 30px 10px 0 10px;
+    border: 1px solid black;
+    padding: 10px;
+    display: inline-block;
+    width: 250px;
+    height: 85px;
+    position: relative;
+    cursor: pointer;
+}
+    .avatar-image {
+        float: left;
+        background: url("/static/images/avatarbg-small.png");
+    }
+
+    .avatar-details {
+        float: left;
+    }
+        .avatar-name {
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+    .checkmark {
+        background: url("/static/images/checkmark.png");
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 48px;
+        height: 48px;
+        display: none;
+    }
+
+.avatar-info.selected {
+    box-shadow: 0 0 10px black;
+}
+    .avatar-info.selected .checkmark {
+        display: block;
+    }
+
+form {
+    text-align: center;
+}
+    #submit {
+        padding: 5px;
+        width: 200px;
+        margin-top: 10px;
+    }

@@ -106,3 +106,17 @@ html, body {
     position: relative;
     left: 200px;
 }
+    #errors {
+        display: block;
+        background: #F88;
+        border: 2px solid red;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    #messages {
+        display: block;
+        background: #88F;
+        border: 2px solid blue;
+        padding: 5px;
+        border-radius: 5px;
+    }
