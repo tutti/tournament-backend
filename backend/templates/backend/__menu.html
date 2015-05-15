@@ -1,7 +1,7 @@
 <div id="menu">
     <ul>
         <li><a href="/">Hovedside</a></li>
-        <li><a href="/find_player">Finn spiller</a></li>
+        <li><a href="/tournaments">Turneringer</a></li>
 
         {% if user.is_authenticated %}
 
@@ -11,7 +11,7 @@
                 <li><a href="/view_player/{{ user.username }}">Vis profil</a></li>
                 <li><a href="/change_password">Endre passord</a></li>
                 <li><a href="/choose_avatar">Velg avatar</a></li>
-                <li><a href="">Vis turneringer</a></li>
+                <li><a href="/tournaments/{{ user.username }}">Vis turneringer</a></li>
                 <li><a href="/logout">Logg ut</a></li>
             </ul>
         </li>

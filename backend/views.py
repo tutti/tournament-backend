@@ -4,12 +4,25 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect
+import locale
+
+locale.setlocale(locale.LC_TIME, "nb_NO.utf8")
 
 from .models import *
 
 def index(request):
-    context = {}
+    players = sorted(Player.objects.all(), key=lambda player: -player.calculate_recent_score())
+    current_position = 0
+    current_score = 100
+    for counter, player in enumerate(players):
+        score = player.calculate_recent_score()
+        if score < current_score:
+            current_position = counter
+            current_score = score
+        player.position = current_position + 1
+    context = { 'players': players }
     return render(request, 'backend/index.html', context)
+    # return redirect('/tournaments')
 
 def view_player(request, pop_id):
     player = Player.objects.get(pop_id=pop_id)
@@ -99,3 +112,20 @@ def choose_avatar(request):
     context['avatars'] = player.get_eligible_avatars()
     context['selected'] = player.avatar
     return render(request, 'backend/choose_avatar.html', context)
+
+def tournaments(request):
+    tournaments = Tournament.objects.all()
+    context = { 'tournaments': tournaments, 'title': "Alle turneringer" }
+    return render(request, 'backend/tournament_list.html', context)
+
+@login_required
+def player_tournaments(request, pop_id):
+    player = Player.objects.get(pop_id=pop_id)
+    tournaments = player.tournament_players.all()
+    context = { 'tournaments': tournaments, 'title': "Turneringer for " + player.name }
+    return render(request, 'backend/tournament_list.html', context)
+
+def view_tournament(request, tournament_id):
+    tournament = Tournament.objects.get(pk=tournament_id)
+    context = { 'tournament': tournament }
+    return render(request, 'backend/view_tournament.html', context)

@@ -34,7 +34,7 @@
     </div>
     {% endfor %}
     <form action="/choose_avatar" method="post">
-        <input type="hidden" id="avatar-input" name="avatar" value="{{ avatar.pk }}" />
+        <input type="hidden" id="avatar-input" name="avatar" value="{{ selected.pk }}" />
         <button id="submit" name="submit" value="submit">Lagre valg</button>
         {% csrf_token %}
     </form>

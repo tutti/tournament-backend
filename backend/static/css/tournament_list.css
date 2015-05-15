@@ -1,0 +1,39 @@
+table {
+    border-radius: 5px;
+    text-align: left;
+    font-size: 0.8em;
+    border-collapse: collapse;
+    border: 2px solid lightgrey;
+}
+    table th {
+        border: 2px solid #44F;
+        background: #44F;
+        color: white;
+        padding: 3px;
+    }
+    #date-head {
+        width: 100px;
+    }
+
+    #name-head {
+        width: 250px;
+    }
+
+    #winner-head {
+        width: 150px;
+    }
+
+    table td {
+        padding: 3px;
+    }
+        table td a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+    table tr.odd td {
+        background: lightgrey;
+    }
+    table tr.even td {
+        background: white;
+    }

@@ -23,6 +23,20 @@
             font-size: 1.2em;
         }
 
+    #player-records {
+        padding: 3px;
+    }
+        #player-records .record-line {
+            display: inline-block;
+            width: 75px;
+            padding-bottom: 5px;
+        }
+
+        #player-records .record-count {
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
 #award-box {
     margin-top: 30px;
     width: 800px;

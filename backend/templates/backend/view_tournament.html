@@ -1,0 +1,62 @@
+{% extends "backend/base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/view_tournament.css" />
+{% endblock %}
+
+{% block body %}
+<h2>Turnering: {{ tournament.name }}</h2>
+<span class="tournament-date">{{ tournament.date|date:"d/m/Y" }}</span>
+
+<h3>Standings:</h3>
+<table id="standings">
+    <thead>
+        <tr>
+            <th class="placement">&nbsp;</th>
+            <th class="player-name">Spiller</th>
+            <th class="record">Record</th>
+            <th class="owp">Op Win</th>
+            <th class="oowp">Op Op Win</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for participation in tournament.participation_set.all %}
+        <tr>
+            <td class="placement">{{ forloop.counter }}</td>
+            <td class="player-name"><a href="/view_player/{{ participation.player.pop_id }}">{{ participation.player.name }}</a></td>
+            <td class="record">{{ participation.wins }}/{{ participation.losses }}/{{ participation.ties }}</td>
+            <td class="owp">{{ participation.owp }}%</td>
+            <td class="oowp">{{ participation.oowp }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% for round in tournament.round_set.all %}
+<h3>Runde {{ forloop.counter }}</h3>
+<table class="round-table">
+    <thead>
+        <tr>
+            <th>Spiller 1</th>
+            <th>Spiller 2</th>
+            <th>Vinner</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for game in round.game_set.all %}
+        {% if game.winner != 8 %}
+        <tr>
+            <td class="player player1"><a href="/view_player/{{ game.player1.pop_id }}">{{ game.player1.name }}</a></td>
+            {% if game.player2 == None %}
+            <td colspan="2" class="bye">Bye</td>
+            {% else %}
+            <td class="player player2"><a href="/view_player/{{ game.player2.pop_id }}">{{ game.player2.name }}</a></td>
+            <td><a href="/view_player/{{ game.get_winner.pop_id }}">{{ game.winner_name }}</a></td>
+            {% endif %}
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endblock %}

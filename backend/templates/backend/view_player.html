@@ -15,10 +15,11 @@
         <span id="player-id">#{{ pop_id }}</span>
     </div>
     <div id="player-records">
-        1. plass: <span id="1st-count">{{ firsts }}</span><br />
-        2. plass: <span id="2nd-count">{{ seconds }}</span><br />
-        3. plass: <span id="3rd-count">{{ thirds }}</span><br />
-        Deltatt: <span id="participation-count">{{ participation_count }}</span>
+        <span class="record-line">1. plass:</span> <span id="1st-count" class="record-count">{{ firsts }}</span><br />
+        <span class="record-line">2. plass:</span> <span id="2nd-count" class="record-count">{{ seconds }}</span><br />
+        <span class="record-line">3. plass:</span> <span id="3rd-count" class="record-count">{{ thirds }}</span><br />
+        <span class="record-line">Deltatt:</span> <span id="participation-count" class="record-count">{{ participation_count }}</span><br />
+        <a href="/tournaments/{{ pop_id }}">Se turneringer</a>
     </div>
 </div>
 <div class="clearfloat"></div>

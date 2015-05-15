@@ -3,12 +3,22 @@ from xml.etree import ElementTree
 from django.contrib.auth.models import User
 import base64
 import hashlib
+from datetime import datetime
+from django import forms
 
 class Player(models.Model):
+    POINTS_1ST = 10
+    POINTS_2ND = 5
+    POINTS_3RD = 3
+    POINTS_4TH = 2
+    MAXTOURNAMENTS = 6
+    TOPTOURNAMENTS = 4
+
     name = models.CharField(max_length=255)
     pop_id = models.IntegerField(primary_key=True)
     gender = models.CharField(max_length=1, default='M')
     visible = models.BooleanField(default=True)
+    max_score = models.IntegerField()
     awards = models.ManyToManyField('Award', blank=True)
     avatar = models.ForeignKey('Avatar')
     default_password = models.CharField(max_length=10)
@@ -18,24 +28,51 @@ class Player(models.Model):
 
     def add_award(self, award_name):
         self.awards.add(Award.objects.get(name=award_name))
+        self.save()
+
+    def calculate_recent_score(self):
+        participations = Participation.objects.filter(player=self).order_by('tournament')[:self.MAXTOURNAMENTS]
+        scores = []
+        for participation in participations:
+            if participation.placement == 1:
+                scores.append(self.POINTS_1ST)
+            elif participation.placement == 2:
+                scores.append(self.POINTS_2ND)
+            elif participation.placement == 3:
+                scores.append(self.POINTS_3RD)
+            elif participation.placement == 4:
+                scores.append(self.POINTS_4TH)
+
+        score = sum(sorted(scores, key=lambda score: -score)[:self.TOPTOURNAMENTS])
+
+        if score > self.max_score:
+            self.max_score = score
+            self.save()
+
+        return score
 
     def count_outcomes(self, outcome):
         participations = Participation.objects.filter(player=self)
-        count = 0
         if (outcome == 0):
             return len(participations)
+        count = 0
         for participation in participations:
             if participation.placement == outcome:
                 count += 1
         return count
 
     def update_awards(self):
+        # Updates awards for:
+        #   - Participation
+        #   - 1 and 10 wins, 2nds and 3rds
+        #   - Staffing
+        #   - 20 and 30 score
         participates = self.count_outcomes(0)
         firsts = self.count_outcomes(1)
         seconds = self.count_outcomes(2) + firsts
         thirds = self.count_outcomes(3) + seconds
         staff = len(self.tournament_staff.all())
-        print(str(participates) + " " + str(firsts) + " " + str(seconds) + " " + str(thirds))
+        score = self.calculate_recent_score()
         if participates >= 1:
             self.add_award("Pokéball")
         if participates >= 5:
@@ -57,6 +94,10 @@ class Player(models.Model):
         if thirds >= 10:
             self.add_award("Star Piece")
         if staff >= 1:
+            self.add_award("Cherish Ball")
+        if score >= 20:
+            self.add_award("Luxury Ball")
+        if score >= 30:
             self.add_award("Premier Ball")
 
     def get_eligible_avatars(self):
@@ -82,16 +123,22 @@ class Player(models.Model):
             return True
         if avatar.name_male == "Champion" and staff >= 1:
             return True
+        if avatar.name_male == "Gym Leader" and self.max_score >= 40:
+            return True
         return False
 
 class Tournament(models.Model):
     name = models.CharField(max_length=255)
+    date = models.DateField(default=datetime.now)
     players = models.ManyToManyField(Player, through='Participation', related_name='tournament_players', blank=True)
     staff = models.ManyToManyField(Player, related_name='tournament_staff', blank=True)
     xml = models.TextField()
     
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ["-date"]
 
     @staticmethod
     def from_xml(xml):
@@ -116,8 +163,13 @@ class Tournament(models.Model):
         # There will be no default password, and the name will not be set.
         # The intended case is for the organiser to already have an account.
         # Add the staff award to the organiser, and the organiser to the staff.
-        organiser.add_award("Premier Ball")
+        organiser.add_award("Cherish Ball")
         tournament.staff.add(organiser)
+
+        # Get the date
+        dateRaw = data.find("startdate").text
+        date = datetime.strptime(dateRaw, "%m/%d/%Y")
+        tournament.date = date
 
         # Create player (and user) objects for players who do not have them yet
         playerElements = root.find("players").findall("player")
@@ -142,7 +194,7 @@ class Tournament(models.Model):
 
                 # Create the user
                 user = User.objects.create_user(pop_id, '', default_pass)
-            players[pop_id] = { 'player': player, 'pop_id': pop_id, 'wins': 0, 'losses': 0, 'ties': 0, 'matches': 0, 'score': 0, 'owp': 0, 'oowp': 0, 'opponents': [] }
+            players[pop_id] = { 'player': player, 'pop_id': pop_id, 'wins': 0, 'losses': 0, 'ties': 0, 'matches': 0, 'bye': False, 'score': 0, 'owp': 0, 'oowp': 0, 'opponents': [] }
 
         # Create the round and game objects
         roundElements = root.find("pods").find("pod").find("rounds").findall("round")
@@ -162,10 +214,21 @@ class Tournament(models.Model):
                     p2id = False
                     player1 = players[p1id]['player']
                     player2 = False
-                    game = Game.objects.create(round=round, player1=player1, player2=None, winner=1)
+                    game = Game.objects.create(round=round, player1=player1, player2=None, winner=5)
 
                     players[p1id]['matches'] += 1
                     players[p1id]['wins'] += 1
+                    players[p1id]['bye'] = True
+                elif outcome == 8:
+                    # The player was late, and not present for this round
+                    p1id = melem.find("player").attrib['userid']
+                    p2id = False
+                    player1 = players[p1id]['player']
+                    player2 = False
+                    game = Game.objects.create(round=round, player1=player1, player2=None, winner=8)
+
+                    players[p1id]['matches'] += 1
+                    players[p1id]['losses'] += 1
                 else:
                     p1id = melem.find("player1").attrib['userid']
                     p2id = melem.find("player2").attrib['userid']
@@ -206,7 +269,15 @@ class Tournament(models.Model):
             # Calculate opponents' win from each opponent's win percentage
             opponent_wins = 0
             for oid in pinfo['opponents']:
-                opwin = 100*(players[oid]['wins'] / players[oid]['matches'])
+                this_opponent_wins = players[oid]['wins']
+                this_opponent_ties = players[oid]['ties']
+                this_opponent_matches = players[oid]['matches']
+                # If a player got a bye, disregard that player's bye match
+                # (subtract 1 from wins and matches).
+                if (players[oid]['bye']):
+                    this_opponent_wins -= 1
+                    this_opponent_matches -= 1
+                opwin = 100 * (2*this_opponent_wins + this_opponent_ties) / (2*this_opponent_matches)
                 # opwin = players[oid]['wins']
                 if opwin < 25:
                     opwin = 25
@@ -267,10 +338,27 @@ class Game(models.Model):
     round = models.ForeignKey(Round)
     player1 = models.ForeignKey(Player, related_name='game_p1')
     player2 = models.ForeignKey(Player, related_name='game_p2', null=True, blank=True)
-    winner = models.SmallIntegerField() # 1 or 2 for player 1 or 2, 3 for tie
+    winner = models.SmallIntegerField() # 1 or 2 for player 1 or 2, 3 for tie, 5 for bye, 8 for late
     
     def __str__(self):
         return str(self.round) + ": " + str(self.player1) + " vs " + str(self.player2)
+
+    def get_winner(self):
+        if self.winner == 1:
+            return self.player1
+        if self.winner == 2:
+            return self.player2
+        return None
+
+    def winner_name(self):
+        if self.winner == 1:
+            return self.player1.name
+        if self.winner == 2:
+            return self.player2.name
+        if self.winner == 3:
+            return "Uavgjort"
+        if self.winner == 5:
+            return "Bye"
 
 class Participation(models.Model):
     tournament = models.ForeignKey(Tournament)
@@ -284,6 +372,9 @@ class Participation(models.Model):
     
     def __str__(self):
         return str(self.tournament) + ": " + str(self.player)
+
+    class Meta:
+        ordering = ["placement"]
 
 class Award(models.Model):
     name = models.CharField(max_length=255)

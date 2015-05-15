@@ -1,5 +1,36 @@
 {% extends "backend/base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/index.css" />
+{% endblock %}
+
 {% block body %}
-lulz
+<h2>Spiller-ranking:</h2>
+<span id="explanation">
+    Her rangeres spillerne etter sine nylige resultater. Første plass i en
+    turnering gir {{ players.0.POINTS_1ST }} poeng, andre plass gir
+    {{ players.0.POINTS_2ND }}, tredje plass gir {{ players.0.POINTS_3RD }}, og
+    fjerde plass gir {{ players.0.POINTS_4TH}}. Kun de siste
+    {{ players.0.MAXTOURNAMENTS }} turneringene teller, og poengene dine er
+    summen av de {{ players.0.TOPTOURNAMENTS }} beste resultatene dine fra
+    disse.
+</span>
+<table id="player-ranking">
+    <thead>
+        <tr>
+            <th class="ranking-player">Spiller</th>
+            <th class="ranking-score">Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in players %}
+        {% if player.calculate_recent_score > 0 %}
+        <tr>
+            <td class="ranking-player rank-{{ player.position }}"><a href="/view_player/{{ player.pop_id }}">{{ player.name }}</a></td>
+            <td class="ranking-score rank-{{ player.position }}">{{ player.calculate_recent_score }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

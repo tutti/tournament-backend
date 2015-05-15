@@ -1,0 +1,68 @@
+h3 {
+    margin-top: 20px;
+}
+
+#standings {
+    border: 2px solid darkgrey;
+    border-collapse: collapse;
+    font-size: 0.8em;
+}
+    #standings td {
+        padding: 5px;
+    }
+
+    #standings th {
+        padding: 5px;
+        border-bottom: 1px dashed black;
+    }
+
+    #standings .placement {
+        border-right: 1px dashed black;
+        width: 20px;
+    }
+
+    #standings .player-name {
+        width: 200px;
+        text-align: left;
+    }
+        #standings .player-name a {
+            display: block;
+            color: black;
+            text-decoration: none;
+        }
+
+    #standings .record {
+        width: 60px;
+        text-align: left;
+    }
+
+    #standings .owp,
+    #standings .oowp {
+        width: 80px;
+        text-align: right;
+    }
+
+.round-table {
+    font-size: 0.8em;
+    border: 2px solid grey;
+    border-collapse: collapse;
+}
+    .round-table th {
+        text-align: left;
+        border-bottom: 1px solid black;
+        padding: 5px;
+    }
+
+    .round-table td {
+        width: 150px;
+        padding: 5px;
+    }
+        .round-table .bye {
+            font-style: italic;
+        }
+
+        .round-table td a {
+            display: block;
+            text-decoration: none;
+            color: black;
+        }

@@ -1,0 +1,27 @@
+{% extends "backend/base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/tournament_list.css" />
+{% endblock %}
+
+{% block body %}
+<h2>{{ title }}</h2>
+<table>
+    <thead>
+        <tr>
+            <th id="date-head">Dato</th>
+            <th id="name-head">Navn</th>
+            <th id="winner-head">Vinner</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tournament in tournaments %}
+        <tr class="{% if forloop.counter|divisibleby:"2" %}even{% else %}odd{% endif %}">
+            <td><a href="/tournament/{{ tournament.pk }}">{{ tournament.date|date:"d/m/Y" }}</a></td>
+            <td><a href="/tournament/{{ tournament.pk }}">{{ tournament.name }}</a></td>
+            <td><a href="/tournament/{{ tournament.pk }}">{{ tournament.participation_set.all.0.player.name }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
