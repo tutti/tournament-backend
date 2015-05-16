@@ -4,9 +4,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect
-import locale
-
-locale.setlocale(locale.LC_TIME, "nb_NO.utf8")
 
 from .models import *
 
@@ -21,8 +18,17 @@ def index(request):
             current_score = score
         player.position = current_position + 1
     context = { 'players': players }
+
+    if len(Tournament.objects.all()) >= 6:
+        for player in players:
+            if player.position == 1:
+                player.add_award("Relic Crown")
+            if player.position <= 2:
+                player.add_award("Relic Statue")
+            if player.position <= 3:
+                player.add_award("Relic Vase")
+
     return render(request, 'backend/index.html', context)
-    # return redirect('/tournaments')
 
 def view_player(request, pop_id):
     player = Player.objects.get(pop_id=pop_id)

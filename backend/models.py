@@ -18,7 +18,7 @@ class Player(models.Model):
     pop_id = models.IntegerField(primary_key=True)
     gender = models.CharField(max_length=1, default='M')
     visible = models.BooleanField(default=True)
-    max_score = models.IntegerField()
+    max_score = models.IntegerField(default=0)
     awards = models.ManyToManyField('Award', blank=True)
     avatar = models.ForeignKey('Avatar')
     default_password = models.CharField(max_length=10)

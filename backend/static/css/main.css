@@ -23,13 +23,14 @@ html, body {
 #header {
     width: 100%;
     height: 100px;
-    background: green;
+    background: #AAF;
+    border-bottom: 4px double black;
 }
 
 #menu {
     width: 150px;
     min-height: 100%;
-    background: #FF5;
+    background: #AAF;
     padding: 20px;
     display: block;
     position: absolute;
@@ -38,6 +39,11 @@ html, body {
     border-color: black;
     border-radius: 0 0 30px 0;
 }
+    #menu-pokeball {
+        display: block;
+        margin: 0px auto 10px auto;
+    }
+
     #menu ul li {
         list-style: none;
         position: relative;
@@ -89,7 +95,7 @@ html, body {
         }
 
         #menu > ul > li.menu-expanded > ul:after {
-            background: #FF5;
+            background: #AAF;
             content: '';
             border-radius: 0 5px 0 0;
             width: 20px;
