@@ -31,7 +31,12 @@ class Player(models.Model):
         self.save()
 
     def calculate_recent_score(self):
-        participations = Participation.objects.filter(player=self).order_by('tournament')[:self.MAXTOURNAMENTS]
+        tournaments = Tournament.objects.all()[:self.MAXTOURNAMENTS]
+        participations = []
+        for tournament in tournaments:
+            participation = tournament.participation_set.filter(player=self).first()
+            if participation is not None:
+                participations.append(participation)
         scores = []
         for participation in participations:
             if participation.placement == 1:
