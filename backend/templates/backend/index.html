@@ -1,7 +1,9 @@
 {% extends "backend/base.html" %}
 
+{% load settings %}
+
 {% block head %}
-<link rel="stylesheet" href="/static/css/index.css" />
+<link rel="stylesheet" href="{% settings_value "STATIC_URL" %}css/index.css" />
 {% endblock %}
 
 {% block body %}

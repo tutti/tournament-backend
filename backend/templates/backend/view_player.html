@@ -1,8 +1,10 @@
 {% extends "backend/base.html" %}
 
+{% load settings %}
+
 {% block head %}
-<link rel="stylesheet" href="/static/css/view_player.css" />
-<script src="/static/js/view_player.js"></script>
+<link rel="stylesheet" href="{% settings_value "STATIC_URL" %}css/view_player.css" />
+<script src="{% settings_value "STATIC_URL" %}js/view_player.js"></script>
 {% endblock %}
 
 {% block body %}

@@ -14,7 +14,7 @@
 }
     .avatar-image {
         float: left;
-        background: url("/static/images/avatarbg-small.png");
+        background: url("../images/avatarbg-small.png");
     }
 
     .avatar-details {
@@ -26,7 +26,7 @@
         }
 
     .checkmark {
-        background: url("/static/images/checkmark.png");
+        background: url("../images/checkmark.png");
         position: absolute;
         bottom: 0;
         right: 0;
