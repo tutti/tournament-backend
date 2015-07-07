@@ -289,7 +289,9 @@ class Tournament(models.Model):
                 if oid in dnf and opwin > 75:
                     opwin = 75
                 opponent_wins += opwin
-            pinfo['owp'] = opponent_wins / len(pinfo['opponents']);
+            if len(pinfo['opponents']) > 0:
+                pinfo['owp'] = opponent_wins / len(pinfo['opponents']);
+
 
         for pid in players:
             pinfo = players[pid]
@@ -297,7 +299,8 @@ class Tournament(models.Model):
             opponent_opwins = 0
             for oid in pinfo['opponents']:
                 opponent_opwins += players[oid]['owp']
-            pinfo['oowp'] = opponent_opwins / len(pinfo['opponents']);
+            if len(pinfo['opponents']) > 0:
+                pinfo['oowp'] = opponent_opwins / len(pinfo['opponents']);
 
             if pid not in dnf:
                 sorted_players.append(pinfo)
